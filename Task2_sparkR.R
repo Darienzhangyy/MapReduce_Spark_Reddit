@@ -161,3 +161,75 @@ total_hours1_gilded=merge(counts_hours_1_gilded,counts_hours_2_gilded, by="Group
 #merge January counts by weekday with February counts by weekday
 total_weeks1_gilded=merge(counts_wdays_1_gilded, counts_wdays_2_gilded, by="Group.1")
 
+#March Gilded
+counts3_gilded=summarize(groupBy(filter(df3, df3$gilded!=0), df3$created_utc),count = n(df3$created_utc))
+counts33_gilded=collect(counts3_gilded)
+#convert created_utc to regular time
+counts33_gilded$created_utc=as.POSIXct(as.numeric(counts33_gilded$created_utc), origin="1970-01-01")
+
+#subset 'hour' from 'created_utc' and store 'hour' as another column
+counts33_gilded$hour=as.POSIXlt(counts33_gilded$created_utc)$hour
+#subset 'wday' from 'created_utc' and store 'wday' as another column
+counts33_gilded$wday=as.POSIXlt(counts33_gilded$created_utc)$wday
+#aggregate counts by hour
+counts_hours_3_gilded=aggregate(counts33_gilded$count, list(counts33_gilded$hour), sum)
+#aggregate counts by weekday
+counts_wdays_3_gilded=aggregate(counts33_gilded$count, list(counts33_gilded$wday), sum)
+
+#April Gilded
+counts4_gilded=summarize(groupBy(filter(df4, df4$gilded!=0), df4$created_utc),count = n(df4$created_utc))
+counts44_gilded=collect(counts4_gilded)
+#convert created_utc to regular time
+counts44_gilded$created_utc=as.POSIXct(as.numeric(counts44_gilded$created_utc), origin="1970-01-01")
+
+#subset 'hour' from 'created_utc' and store 'hour' as another column
+counts44_gilded$hour=as.POSIXlt(counts44_gilded$created_utc)$hour
+#subset 'wday' from 'created_utc' and store 'wday' as another column
+counts44_gilded$wday=as.POSIXlt(counts44_gilded$created_utc)$wday
+#aggregate counts by hour
+counts_hours_4_gilded=aggregate(counts44_gilded$count, list(counts44_gilded$hour), sum)
+#aggregate counts by weekday
+counts_wdays_4_gilded=aggregate(counts44_gilded$count, list(counts44_gilded$wday), sum)
+#merge January counts by hour with February counts by hour
+total_hours2_gilded=merge(counts_hours_3_gilded,counts_hours_4_gilded, by="Group.1")
+#merge January counts by weekday with February counts by weekday
+total_weeks2_gilded=merge(counts_wdays_3_gilded, counts_wdays_4_gilded, by="Group.1")
+
+#May Gilded
+counts5_gilded<- summarize(groupBy(filter(df5, df5$gilded!=0),df5$created_utc), count = n(df5$created_utc))
+
+counts55_gilded=collect(counts5)
+#convert created_utc to regular time
+counts55_gilded$created_utc=as.POSIXct(as.numeric(counts55_gilded$created_utc), origin="1970-01-01")
+#subset 'hour' from 'created_utc' and store 'hour' as another column
+counts55_gilded$hour=as.POSIXlt(counts55_gilded$created_utc)$hour
+#subset 'wday' from 'created_utc' and store 'wday' as another column
+counts55_gilded$wday=as.POSIXlt(counts55_gilded$created_utc)$wday
+#aggregate counts by hour
+counts_hours_5_gilded=aggregate(counts55_gilded$count, list(counts55_gilded$hour), sum)
+#aggregate counts by weekday
+counts_wdays_5_gilded=aggregate(counts55_gilded$count, list(counts55_gilded$wday), sum)
+#merge Jan-Feb counts by hour with Mar-Apr counts by hour
+total_hours3_gilded=merge(total_hours1_gilded, total_hours2_gilded, by="Group.1")
+#merge Jan-Feb counts by week with Mar-Apr counts by week
+total_weeks3_gilded=merge(total_weeks1_gilded, total_weeks2_gilded, by="Group.1")
+#merge Jan-April counts by hour with May counts by hour
+total_hours_gilded=merge(total_hours3_gilded, counts_hours_5_gilded, by="Group.1")
+#merge Jan-April counts by weekday with May counts by weekday
+total_weeks_gilded=merge(total_weeks3_gilded, counts_wdays_5_gilded, by="Group.1")
+#sum up Jan-May counts by hour
+total_hours_gilded$total=rowSums(total_hours_gilded[,2:6])
+#sum up Jan-May counts by weekday
+total_weeks_gilded$total=rowSums(total_weeks_gilded[,2:6])
+
+jpeg('Freq_gilded_Jan-May.jpeg')
+plot(total_hours$Group.1, total_hours$total, xlab="Hour", ylab="Frequency of Gilded Comments")
+dev.off()
+
+jpeg('Freq_gilded_weekly.jpeg')
+plot(total_weeks$Group.1, total_weeks$total, xlab="Weekday", ylab="Frequency of Gilded Comments")
+dev.off()
+
+
+
+
