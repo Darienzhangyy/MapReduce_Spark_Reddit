@@ -157,6 +157,7 @@ Top25Apr$`Rank change` = Top25Apr$`Last month's rank`-Top25Apr$`This month's ran
 #reorder the column sequence
 Top25Apr = Top25Apr[c(1,2,4,3,5,6)]
 rownames(Top25Apr) <- NULL
+Top25Apr[is.na(Top25Apr)] <- "--"
 save(Top25Apr, file="Top25Apr.RData")
 save(sortApr, file="Apr_Complete.RData")
 #May
@@ -177,4 +178,16 @@ rownames(Top25May) <- NULL
 save(Top25May, file="Top25May.RData")
 save(sortMay, file="May_Complete.RData")
 
+#save the five month data together
+save(list=c('Top25Jan','Top25Feb','Top25Mar','Top25Apr','Top25May'), file="Top25.RData")
+
+#Xtable
+```{r,echo=F,results='asis',comment=F}
+library(xtable)
+  print(xtable(Top25Jan,caption='January',digits=0),comment=FALSE)
+  print(xtable(Top25Feb,caption='Feburary',digits=0),comment=FALSE)
+  print(xtable(Top25Mar,caption='March',digits=0),comment=FALSE)
+  print(xtable(Top25Apr,caption='April',digits=0),comment=FALSE)
+  print(xtable(Top25May,caption='May',digits=0),comment=FALSE)
+```
 
