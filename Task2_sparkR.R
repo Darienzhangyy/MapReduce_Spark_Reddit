@@ -125,7 +125,39 @@ jpeg('Freq_comments_weekly.jpeg')
 plot(total_weeks$Group.1, total_weeks$total, xlab="Weekday", ylab="Frequency of Comments")
 dev.off()
 
+##Gilded
 
+#January Gilded
+counts1_gilded=summarize(groupBy(filter(df1, df1$gilded!=0), df1$created_utc),count = n(df1$created_utc))
+counts11_gilded=collect(counts1_gilded)
+#convert created_utc to regular time
+counts11_gilded$created_utc=as.POSIXct(as.numeric(counts11_gilded$created_utc), origin="1970-01-01")
 
+#subset 'hour' from 'created_utc' and store 'hour' as another column
+counts11_gilded$hour=as.POSIXlt(counts11_gilded$created_utc)$hour
+#subset 'wday' from 'created_utc' and store 'wday' as another column
+counts11_gilded$wday=as.POSIXlt(counts11_gilded$created_utc)$wday
+#aggregate counts by hour
+counts_hours_1_gilded=aggregate(counts11_gilded$count, list(counts11_gilded$hour), sum)
+#aggregate counts by weekday
+counts_wdays_1_gilded=aggregate(counts11_gilded$count, list(counts11_gilded$wday), sum)
 
+#February Gilded
+counts2_gilded=summarize(groupBy(filter(df2, df2$gilded!=0), df2$created_utc),count = n(df2$created_utc))
+counts22_gilded=collect(counts2_gilded)
+#convert created_utc to regular time
+counts22_gilded$created_utc=as.POSIXct(as.numeric(counts22_gilded$created_utc), origin="1970-01-01")
+
+#subset 'hour' from 'created_utc' and store 'hour' as another column
+counts22_gilded$hour=as.POSIXlt(counts22_gilded$created_utc)$hour
+#subset 'wday' from 'created_utc' and store 'wday' as another column
+counts22_gilded$wday=as.POSIXlt(counts22_gilded$created_utc)$wday
+#aggregate counts by hour
+counts_hours_2_gilded=aggregate(counts22_gilded$count, list(counts22_gilded$hour), sum)
+#aggregate counts by weekday
+counts_wdays_2_gilded=aggregate(counts22_gilded$count, list(counts22_gilded$wday), sum)
+#merge January counts by hour with February counts by hour
+total_hours1_gilded=merge(counts_hours_1_gilded,counts_hours_2_gilded, by="Group.1")
+#merge January counts by weekday with February counts by weekday
+total_weeks1_gilded=merge(counts_wdays_1_gilded, counts_wdays_2_gilded, by="Group.1")
 
