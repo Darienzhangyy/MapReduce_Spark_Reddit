@@ -1,21 +1,86 @@
+### Initialization of Rhipe and Hadoop
+
+Sys.setenv(HADOOP="/data/hadoop")
+Sys.setenv(HADOOP_HOME="/data/hadoop")
+Sys.setenv(HADOOP_BIN="/data/hadoop/bin") 
+Sys.setenv(HADOOP_CMD="/data/hadoop/bin/hadoop") 
+Sys.setenv(HADOOP_CONF_DIR="/data/hadoop/etc/hadoop") 
+Sys.setenv(HADOOP_LIBS=system("/data/hadoop/bin/hadoop classpath | tr -d '*'",TRUE))
+
+
+if (!("Rhipe" %in% installed.packages()))
+{
+  install.packages("/data/hadoop/rhipe/Rhipe_0.75.1.6_hadoop-2.tar.gz", repos=NULL)
+}
+
+library(Rhipe)
+rhinit()
+
 ### Word Count
 
-wc_map = expression({
+library(tm)
+suppressMessages(library(jsonlite))
+
+wc_map_Valen = expression({
   lapply(
     seq_along(map.keys), 
     function(r) 
-    {
-      line = tolower(map.values[[r]])$body
+    { 
+      if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423958400 &
+          as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423872000){
+      line = tolower(fromJSON(map.values[[r]])$body)
       line = gsub("[-—]"," ",line)
       line = gsub("[^'`’[:alpha:][:space:]]","",line,perl=TRUE)
       line = gsub("(^\\s+|\\s+$)","",line)
       line = strsplit(line, "\\s+")[[1]]
       line = line[line != ""]
-      
+      line = tm_map(line, removeWords,stopwords("en"))
       lapply(line, rhcollect, value=1)
+      }
     }
   )
 })
+
+wc_map_FebSev = expression({
+  lapply(
+    seq_along(map.keys), 
+    function(r) 
+    { 
+      if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423353600 &
+          as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423267200){
+        line = tolower(fromJSON(map.values[[r]])$body)
+        line = gsub("[-—]"," ",line)
+        line = gsub("[^'`’[:alpha:][:space:]]","",line,perl=TRUE)
+        line = gsub("(^\\s+|\\s+$)","",line)
+        line = strsplit(line, "\\s+")[[1]]
+        line = line[line != ""]
+        line = tm_map(line, removeWords,stopwords("en"))
+      lapply(line, rhcollect, value=1)
+      }
+    }
+  )
+})
+
+wc_map_FebTwoone = expression({
+  lapply(
+    seq_along(map.keys), 
+    function(r) 
+    { 
+      if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1424563200 &
+          as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1424476800){
+        line = tolower(fromJSON(map.values[[r]])$body)
+        line = gsub("[-—]"," ",line)
+        line = gsub("[^'`’[:alpha:][:space:]]","",line,perl=TRUE)
+        line = gsub("(^\\s+|\\s+$)","",line)
+        line = strsplit(line, "\\s+")[[1]]
+        line = line[line != ""]
+        line = tm_map(line, removeWords,stopwords("en"))
+      lapply(line, rhcollect, value=1)
+      }
+    }
+  )
+})
+
 
 wc_reduce = expression(
   pre = {
@@ -30,21 +95,21 @@ wc_reduce = expression(
 )
 
 wc_Valen = rhwatch(
-  map      = wc_map,
+  map      = wc_map_Valen,
   reduce   = wc_reduce,
-  input    = rhfmt("/data/Shakespeare/hamlet.txt", type = "text")
+  input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
 wc_FebSev = rhwatch(
-  map      = wc_map,
+  map      = wc_map_FebSev,
   reduce   = wc_reduce,
-  input    = rhfmt("/data/Shakespeare/hamlet.txt", type = "text")
+  input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
 wc_FebTwoone = rhwatch(
-  map      = wc_map,
+  map      = wc_map_FebTwoone,
   reduce   = wc_reduce,
-  input    = rhfmt("/data/Shakespeare/hamlet.txt", type = "text")
+  input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
 get_val = function(x,i) x[[i]]
