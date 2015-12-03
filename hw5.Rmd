@@ -1,0 +1,25 @@
+---
+title: "hw5.Rmd"
+author: "Eclectic Eagle Scouts"
+date: "12/3/2015"
+output: html_document
+---
+
+
+
+**Task 2**
+
+Task2_sparkR.R
+
+To create plots that show the frequency of Reddit comments over the entire time period, we first create data frames that store total counts of comments by hour by aggregating five months' data ( stored as `CommentsByHour` as total comments and `CommentsByHour_G` as total gilded comments). We also create tables that details hourly comments over the days of the week for the entire period of five month (stored as `MondayComments, MondayComments_G (gilded), TuesdayComments, TuesdayComments_G (gilded)`, etc.) All the data frames are stored in `hourly.RData`.   
+
+To create those tables we use Spark SQL to read in JSON files from January to May as SparkR DataFrames. This then allows us to to summarize counts of comments for each month with columns named `created_utc` and `count` that indicates counts of comments per `created_utc`. After counts are collected using `collect()`, we convert `created_utc` (Unix timestamp) into readable date and time using function `as.POSIXct()`, and create columns that denote hour (`as.POSIXlt(..$created_utc)$hour`) and weekday (`as.POSIXlt(..$created_utc)$wday`) according to each `created_utc`. To create data frame `CommentsByHour`, we use `aggregate(..list(..$hour))`, merge corresponding results from January to May and use `rowSums()` to created a `total` column that stores number of comments for the entire 5 months by each hour of day. To aggregate hourly counts of comment over days of week, with each month, we use `aggregate(..list(..$hour, ..$wday))` to aggregate counts of comments first by hour then by weekday. We then merge corresponding outcomes from January and May, create a column named `total` that sums up total number of comments across five month. We finally subset total counts by weekday using `subset()` and only extract columns that specifies a particular hour (`$hour`), a particular weekday (`$wday`), and comments in total (`$5 month total`)
+
+```{r, echo=TRUE}
+source(hourly.RData)
+```
+
+We then plot corresponding counts using ggplot.
+
+
+The result shows that...
