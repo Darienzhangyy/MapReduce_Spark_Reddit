@@ -158,8 +158,7 @@ countsFebTwoone = data.frame(key = sapply(wc_FebTwoone,get_val,i=1),
                          value = sapply(wc_FebTwoone,get_val,i=2), 
                          stringsAsFactors=FALSE)
 sortFebTwoone = countsFebTwoone[with(countsFebTwoone, order(-value)), ]
-sortFebTwoone = sortFebTwoone[which(!(sortFebTwoone$key %in% c(stopword,"just",
-                "will","can","now","also"))),]
+sortFebTwoone = sortFebTwoone[which(!(sortFebTwoone$key %in% stopword)),]
 Top25FebTwoone = head(sortFebTwoone,25)
 colnames(Top25FebTwoone) = c("Word","Frequency")
 rownames(Top25FebTwoone) <- NULL
