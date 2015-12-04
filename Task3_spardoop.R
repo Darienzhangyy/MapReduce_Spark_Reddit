@@ -130,8 +130,7 @@ countsValen = data.frame(key = sapply(wc_Valen,get_val,i=1),
                        value = sapply(wc_Valen,get_val,i=2), 
                        stringsAsFactors=FALSE)
 sortValen = countsValen[with(countsValen, order(-value)), ]
-sortValen = sortValen[which(!(sortValen$key %in% c(stopword,"just",
-                 "will","can","now","also"))),]
+sortValen = sortValen[which(!(sortValen$key %in% stopword)),]
 Top25Valen = head(sortValen,25)
 colnames(Top25Valen) = c("Word","Frequency")
 rownames(Top25Valen) <- NULL
@@ -144,8 +143,7 @@ countsFebSev = data.frame(key = sapply(wc_FebSev,get_val,i=1),
                          value = sapply(wc_FebSev,get_val,i=2), 
                          stringsAsFactors=FALSE)
 sortFebSev = countsFebSev[with(countsFebSev, order(-value)), ]
-sortFebSev = sortFebSev[which(!(sortFebSev$key %in% c(stopword,"just",
-                "will","can","now","also"))),]
+sortFebSev = sortFebSev[which(!(sortFebSev$key %in% stopword)),]
 Top25FebSev = head(sortFebSev,25)
 colnames(Top25FebSev) = c("Word","Frequency")
 rownames(Top25FebSev) <- NULL
