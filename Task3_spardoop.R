@@ -16,12 +16,16 @@ if (!("Rhipe" %in% installed.packages()))
 library(Rhipe)
 rhinit()
 
+## Uncomment following lines if you need non-base packages
+rhoptions(zips = '/R/R.Pkg.tar.gz')
+rhoptions(runner = 'sh ./R.Pkg/library/Rhipe/bin/RhipeMapReduce.sh')
+
 ### Word Count
 
-library(tm)
-suppressMessages(library(jsonlite))
 
 wc_map_Valen = expression({
+  suppressMessages(library(jsonlite))
+  #suppressMessages(library(tm))
   lapply(
     seq_along(map.keys), 
     function(r) 
@@ -34,7 +38,7 @@ wc_map_Valen = expression({
       line = gsub("(^\\s+|\\s+$)","",line)
       line = strsplit(line, "\\s+")[[1]]
       line = line[line != ""]
-      line = tm_map(line, removeWords,stopwords("en"))
+      #line = tm_map(line, removeWords,stopwords("en"))
       lapply(line, rhcollect, value=1)
       }
     }
@@ -42,6 +46,8 @@ wc_map_Valen = expression({
 })
 
 wc_map_FebSev = expression({
+  suppressMessages(library(jsonlite))
+  #suppressMessages(library(tm))
   lapply(
     seq_along(map.keys), 
     function(r) 
@@ -54,7 +60,7 @@ wc_map_FebSev = expression({
         line = gsub("(^\\s+|\\s+$)","",line)
         line = strsplit(line, "\\s+")[[1]]
         line = line[line != ""]
-        line = tm_map(line, removeWords,stopwords("en"))
+        #line = tm_map(line, removeWords,stopwords("en"))
       lapply(line, rhcollect, value=1)
       }
     }
@@ -62,6 +68,8 @@ wc_map_FebSev = expression({
 })
 
 wc_map_FebTwoone = expression({
+  suppressMessages(library(jsonlite))
+  #suppressMessages(library(tm))
   lapply(
     seq_along(map.keys), 
     function(r) 
@@ -74,7 +82,7 @@ wc_map_FebTwoone = expression({
         line = gsub("(^\\s+|\\s+$)","",line)
         line = strsplit(line, "\\s+")[[1]]
         line = line[line != ""]
-        line = tm_map(line, removeWords,stopwords("en"))
+        #line = tm_map(line, removeWords,stopwords("en"))
       lapply(line, rhcollect, value=1)
       }
     }
@@ -117,10 +125,13 @@ get_val = function(x,i) x[[i]]
 setwd("~/MapReduce")
 
 #Valentine
+stopword = stopwords("en")
 countsValen = data.frame(key = sapply(wc_Valen,get_val,i=1),
                        value = sapply(wc_Valen,get_val,i=2), 
                        stringsAsFactors=FALSE)
 sortValen = countsValen[with(countsValen, order(-value)), ]
+sortValen = sortValen[which(!(sortValen$key %in% c(stopword,"just",
+                 "will","can","now","also"))),]
 Top25Valen = head(sortValen,25)
 colnames(Top25Valen) = c("Word","Frequency")
 rownames(Top25Valen) <- NULL
@@ -128,10 +139,13 @@ save(Top25Valen, file="Top25Valen.RData")
 save(sortValen, file="Valentine_Complete.RData")
 
 #Feb 7th
+stopword = stopwords("en")
 countsFebSev = data.frame(key = sapply(wc_FebSev,get_val,i=1),
                          value = sapply(wc_FebSev,get_val,i=2), 
                          stringsAsFactors=FALSE)
 sortFebSev = countsFebSev[with(countsFebSev, order(-value)), ]
+sortFebSev = sortFebSev[which(!(sortFebSev$key %in% c(stopword,"just",
+                "will","can","now","also"))),]
 Top25FebSev = head(sortFebSev,25)
 colnames(Top25FebSev) = c("Word","Frequency")
 rownames(Top25FebSev) <- NULL
@@ -139,10 +153,13 @@ save(Top25FebSev, file="Top25FebSev.RData")
 save(sortFebSev, file="FebSev_Complete.RData")
 
 #Feb 21st
+stopword = stopwords("en")
 countsFebTwoone = data.frame(key = sapply(wc_FebTwoone,get_val,i=1),
                          value = sapply(wc_FebTwoone,get_val,i=2), 
                          stringsAsFactors=FALSE)
 sortFebTwoone = countsFebTwoone[with(countsFebTwoone, order(-value)), ]
+sortFebTwoone = sortFebTwoone[which(!(sortFebTwoone$key %in% c(stopword,"just",
+                "will","can","now","also"))),]
 Top25FebTwoone = head(sortFebTwoone,25)
 colnames(Top25FebTwoone) = c("Word","Frequency")
 rownames(Top25FebTwoone) <- NULL
@@ -155,7 +172,7 @@ colnames(wordCount) = c("Feb7","Frequency7","Feb14","Frequency14",
                              "Feb21","Frequency21")
 
 #barplot of [deleted]
-delete7 = Top25FebSev[which(Top25FebSev[,1]=="[deleted]"),2]
-delete14 = Top25Valen[which(Top25Valen[,1]=="[deleted]"),2]
-delete21 = Top25FebTwoone[which(Top25FebTwoone[,1]=="[deleted]"),2]
+delete7 = Top25FebSev[which(Top25FebSev[,1]=="deleted"),2]
+delete14 = Top25Valen[which(Top25Valen[,1]=="deleted"),2]
+delete21 = Top25FebTwoone[which(Top25FebTwoone[,1]=="deleted"),2]
 barplot(c(delete7,delete14,delete21),names.arg = c("Feb7","Feb14","Feb21"))
