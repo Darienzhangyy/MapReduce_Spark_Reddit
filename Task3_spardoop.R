@@ -164,9 +164,10 @@ save(Top25FebTwoone, file="Top25FebTwoone.RData")
 save(sortFebTwoone, file="FebTwoone_Complete.RData")
 
 #Combine the three data frames
-wordCount = rbind(Top25FebSev,Top25Valen,Top25FebTwoone)
+wordCount = cbind(Top25FebSev[,1:2],Top25Valen[,1:2],Top25FebTwoone[,1:2])
 colnames(wordCount) = c("Feb7","Frequency7","Feb14","Frequency14",
                              "Feb21","Frequency21")
+save(wordCount, file="Feb_ThreeDays.RData")
 
 #barplot of [deleted]
 delete7 = Top25FebSev[which(Top25FebSev[,1]=="deleted"),2]
