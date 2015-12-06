@@ -6,14 +6,14 @@ output: html_document
 ---
 #Introduction#
 
-A particularly industrious Reddit user has scraped mountains of data in the form of Reddit posts and metadata, making them available to the data-wrangling public. Our goal is to study the?? behavior of users based on the dataset. However, because the dataset is much larger than the other datasets we have dealt with before, we must utilize new methods such as Hapoop and SparkR.
+A particularly industrious Reddit user has scraped mountains of data in the form of Reddit posts and metadata, making them available to the data-wrangling public. Our goal is to study the behavior of users based on the dataset. However, because the dataset is much larger than the other datasets we have dealt with before, we must utilize new methods such as Hadoop and SparkR.
 
 
 #Task 1#
 
 ###Raddit_Hadoop.R SHOULDN'T THIS BE REDDIT WITH AN E ###
 
-The first use of the Reddit data is to aggregate posts to the subreddit-month level and construct Billboard-esque Top 25 charts for each of the five months in the data -- January, February, March, May, June. To rank what were the 25 most popular subreddits from January to May, we use MapReduce model on Hadoop to process the dataset. In the Map step we pick out the `subreddit` variable from the Json files and add value one to them. In the Reduce step we aggregate the values as the count of the subreddits. After MapReduce we get `TPsubredJan`, `TPsubredFeb`, `TPsubredMar`, `TPsubredApr` and `TPsubredMay` that include the count of every subreddit. After extracting the words and their counts, we make a data frame and sort by the count value and get the top 25 subreddits of the month.
+The first use of the Reddit data is to aggregate posts to the subreddit-month level and construct Billboard-esque Top 25 charts for each of the five months in the data -- January, February, March, April and May. To rank what were the 25 most popular subreddits from January to May, we use MapReduce model on Hadoop to process the dataset. In the Map step we pick out the `subreddit` variable from the Json files and add value one to them. In the Reduce step we aggregate the values as the count of the subreddits. After MapReduce we get `TPsubredJan`, `TPsubredFeb`, `TPsubredMar`, `TPsubredApr` and `TPsubredMay` that include the count of every subreddit. After extracting the words and their counts, we make a data frame and sort by the count value and get the top 25 subreddits of the month.
 
 To get the billboard-like table, every word of the top 25 words of the month is used as the `merge` function key to include the ranking information in the previous month. After merging, or left joining, the 25 row data frame with the whole data frame from the previous month, we get the final billboard data frame of the month, with variables `Subreddit`,`This month`, `This month's rank`,`Last month`, `Last month's rank` and `Rank change`. Similar steps are repeated for all of the five months for getting the final billboard tables. (Table of January has no rank changing information since we do not have information of the last December)
 
