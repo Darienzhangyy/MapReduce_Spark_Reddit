@@ -106,21 +106,21 @@ wc_reduce = expression(
   }
 )
 
-# creat a object wc_Valen to count words on Valentine's day
+# creat a R object wc_Valen to count words on Valentine's day
 wc_Valen = rhwatch(
   map      = wc_map_Valen,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
-# creat a object wc_FebSev to count words on Valentine's day
+# creat a R object wc_FebSev to count words on Valentine's day
 wc_FebSev = rhwatch(
   map      = wc_map_FebSev,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
-# creat a object wc_FebTwoone to count words on Valentine's day
+# creat a R object wc_FebTwoone to count words on Valentine's day
 wc_FebTwoone = rhwatch(
   map      = wc_map_FebTwoone,
   reduce   = wc_reduce,
