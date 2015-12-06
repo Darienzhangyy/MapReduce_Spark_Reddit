@@ -6,7 +6,7 @@ output: html_document
 ---
 #Introduction#
 
-A particularly industrious Reddit user has scraped mountains of data in the form of Reddit posts and metadata, making them available to the data-wrangling public. Our goal is to study the€™ behavior of users based on the dataset. However, because the dataset is much larger than the other datasets we have dealt with before, we must utilize new methods such as Hapoop and SparkR.
+A particularly industrious Reddit user has scraped mountains of data in the form of Reddit posts and metadata, making them available to the data-wrangling public. Our goal is to study the?? behavior of users based on the dataset. However, because the dataset is much larger than the other datasets we have dealt with before, we must utilize new methods such as Hapoop and SparkR.
 
 
 #Task 1#
@@ -315,6 +315,14 @@ grid.arrange(monthly_all_stacked, daily_all_stacked, ncol=2)
 ###Task3_spardoop.R###
 
 In Task 3, we compare the most frequently occurring words on Valentine's Day to the Saturday immediately prior and immediately following, our control days. Similar to our approach to Task 1, the map-reduce paradigm is used to count the words in each Reddit post. One difference, however, is that we use regular expressions and string functions to clean the data and remove stopwords, frequently occurring yet uninformative words. 
+
+The Valentineâ€™s Day in 2015 is on a Saturday, thus we choose the two control days to be Feb.7th and Feb 21st, which are also Saturdays. In the Map function, we subset the whole Json file `RC_2015-02.json` based on the value `created_utc`. We pick out the values of `created_utc`, turned them into numerical values  and compare with the utc values we search online that represent  the range of the three days. For instance, `1423958400` represents the last second on Feb.14th and `1423872000 ` stands for the first second of Valentineâ€™s Day. After extracting the days, we pick out the `body` part of every component of the Json file lists, turn the strings to lowercase, remove puntuations and split the sentences to words and add value one to every word. It is worth mentioning that we choose not to remove stopwords in the Map function because including the `tm` package will significantly slow down the speed of doing MapReduce on Saxon. Thus we choose to remove stopwords in normal R step without involving Hadoop server on Saxon after we get the frequency of all the words of the three days. This seems less efficient since we get a lot of useless words in the MapReduce step, but the fact is, by removing stopwords afterwards, it is less likely to cause error in Hadoop and the speed is much faster. 
+
+The reduce function is quite similar to the first task, which would count the number of each word.
+
+After the MapReduce, we get three large list ` wc_Valen `, ` wc_FebSev ` and ` wc_FebTwoone `. The words are the `key` in the lists and the count of the words are stored in the `value`. We make a data frame to store the words and the counts. `stopword` stores the stopwords in English. We sort the data frame according to the count values and remove the stopwords. After getting a whole data frame of useful words, we pick out the top 25 words that appear most frequently of the days and saved them. 
+
+To compare the results, `wordCount` data frame is created, which combines the top words of Valentineâ€™s Day, Feb 7th, Feb.21st and their word counts. 
   
 
 ###Plot###

@@ -2,9 +2,9 @@
 
 Sys.setenv(HADOOP="/data/hadoop")
 Sys.setenv(HADOOP_HOME="/data/hadoop")
-Sys.setenv(HADOOP_BIN="/data/hadoop/bin") 
-Sys.setenv(HADOOP_CMD="/data/hadoop/bin/hadoop") 
-Sys.setenv(HADOOP_CONF_DIR="/data/hadoop/etc/hadoop") 
+Sys.setenv(HADOOP_BIN="/data/hadoop/bin")
+Sys.setenv(HADOOP_CMD="/data/hadoop/bin/hadoop")
+Sys.setenv(HADOOP_CONF_DIR="/data/hadoop/etc/hadoop")
 Sys.setenv(HADOOP_LIBS=system("/data/hadoop/bin/hadoop classpath | tr -d '*'",TRUE))
 
 
@@ -27,9 +27,9 @@ wc_map_Valen = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
   lapply(
-    seq_along(map.keys), 
-    function(r) 
-    { 
+    seq_along(map.keys),
+    function(r)
+    {
       #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423958400 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423872000){
@@ -45,14 +45,14 @@ wc_map_Valen = expression({
     }
   )
 })
-# define a map function for February 7th 
+# define a map function for February 7th
 wc_map_FebSev = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
   lapply(
-    seq_along(map.keys), 
-    function(r) 
-    { 
+    seq_along(map.keys),
+    function(r)
+    {
       #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423353600 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423267200){
@@ -69,14 +69,14 @@ wc_map_FebSev = expression({
   )
 })
 
-# define a map function for February 21th 
+# define a map function for February 21th
 wc_map_FebTwoone = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
   lapply(
-    seq_along(map.keys), 
-    function(r) 
-    { 
+    seq_along(map.keys),
+    function(r)
+    {
       #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1424563200 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1424476800){
@@ -93,7 +93,7 @@ wc_map_FebTwoone = expression({
   )
 })
 
-# define a reduce function 
+# define a reduce function
 wc_reduce = expression(
   pre = {
     total = 0
@@ -106,21 +106,21 @@ wc_reduce = expression(
   }
 )
 
-# creat a R object wc_Valen to count words on Valentine's day
+# creat a object wc_Valen to count words on Valentine's day
 wc_Valen = rhwatch(
   map      = wc_map_Valen,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
-# creat a R object wc_FebSev to count words on Valentine's day
+# creat a object wc_FebSev to count words on Valentine's day
 wc_FebSev = rhwatch(
   map      = wc_map_FebSev,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
-# creat a R object wc_FebTwoone to count words on Valentine's day
+# creat a object wc_FebTwoone to count words on Valentine's day
 wc_FebTwoone = rhwatch(
   map      = wc_map_FebTwoone,
   reduce   = wc_reduce,
@@ -135,10 +135,11 @@ setwd("~/MapReduce")
 stopword = stopwords("en")
 #call the MapReduce function for Valentine's day
 countsValen = data.frame(key = sapply(wc_Valen,get_val,i=1),
-                       value = sapply(wc_Valen,get_val,i=2), 
+                       value = sapply(wc_Valen,get_val,i=2),
                        stringsAsFactors=FALSE)
-sortValen = countsValen[with(countsValen, order(-value)), ]
 #sort words from counting result
+sortValen = countsValen[with(countsValen, order(-value)), ]
+#Remove the stopwords
 sortValen = sortValen[which(!(sortValen$key %in% stopword)),]
 #take out Top25 words
 Top25Valen = head(sortValen,25)
@@ -152,10 +153,11 @@ save(sortValen, file="Valentine_Complete.RData")
 stopword = stopwords("en")
 #call the MapReduce function for February 7th
 countsFebSev = data.frame(key = sapply(wc_FebSev,get_val,i=1),
-                         value = sapply(wc_FebSev,get_val,i=2), 
+                         value = sapply(wc_FebSev,get_val,i=2),
                          stringsAsFactors=FALSE)
-#sort words from counnting result
+#sort words from counting result
 sortFebSev = countsFebSev[with(countsFebSev, order(-value)), ]
+#Remove the stopwords
 sortFebSev = sortFebSev[which(!(sortFebSev$key %in% stopword)),]
 #take out Top25 words
 Top25FebSev = head(sortFebSev,25)
@@ -169,10 +171,11 @@ save(sortFebSev, file="FebSev_Complete.RData")
 stopword = stopwords("en")
 #call the MapReduce function for February 21th
 countsFebTwoone = data.frame(key = sapply(wc_FebTwoone,get_val,i=1),
-                         value = sapply(wc_FebTwoone,get_val,i=2), 
+                         value = sapply(wc_FebTwoone,get_val,i=2),
                          stringsAsFactors=FALSE)
-sortFebTwoone = countsFebTwoone[with(countsFebTwoone, order(-value)), ]
 #sort words from counnting result
+sortFebTwoone = countsFebTwoone[with(countsFebTwoone, order(-value)), ]
+#Remove the stopwords
 sortFebTwoone = sortFebTwoone[which(!(sortFebTwoone$key %in% stopword)),]
 #take out Top25 words
 Top25FebTwoone = head(sortFebTwoone,25)
