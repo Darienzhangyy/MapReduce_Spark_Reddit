@@ -2,9 +2,9 @@
 
 Sys.setenv(HADOOP="/data/hadoop")
 Sys.setenv(HADOOP_HOME="/data/hadoop")
-Sys.setenv(HADOOP_BIN="/data/hadoop/bin") 
-Sys.setenv(HADOOP_CMD="/data/hadoop/bin/hadoop") 
-Sys.setenv(HADOOP_CONF_DIR="/data/hadoop/etc/hadoop") 
+Sys.setenv(HADOOP_BIN="/data/hadoop/bin")
+Sys.setenv(HADOOP_CMD="/data/hadoop/bin/hadoop")
+Sys.setenv(HADOOP_CONF_DIR="/data/hadoop/etc/hadoop")
 Sys.setenv(HADOOP_LIBS=system("/data/hadoop/bin/hadoop classpath | tr -d '*'",TRUE))
 
 
@@ -19,15 +19,15 @@ rhinit()
 rhoptions(zips = '/R/R.Pkg.tar.gz')
 rhoptions(runner = 'sh ./R.Pkg/library/Rhipe/bin/RhipeMapReduce.sh')
 
-### top 25 subreddits 
+### top 25 subreddits
 
 # define a map function to rank subreddit
 Red_map = expression({
   suppressMessages(library(jsonlite))
-  
+
   lapply(
-    seq_along(map.keys), 
-    function(r) 
+    seq_along(map.keys),
+    function(r)
     {
       key = fromJSON(map.values[[r]])$subreddit
       value = 1
@@ -102,7 +102,7 @@ setwd("~/MapReduce")
 
 #Jan
 countsJan = data.frame(key = sapply(TPsubredJan,get_val,i=1),
-                    value = sapply(TPsubredJan,get_val,i=2), 
+                    value = sapply(TPsubredJan,get_val,i=2),
                     stringsAsFactors=FALSE)
 sortJan = countsJan[with(countsJan, order(-value)), ]
 sortJan$rank = seq.int(nrow(sortJan))
@@ -114,11 +114,12 @@ save(sortJan, file="Jan_Complete.RData")
 
 #Feb
 countsFeb = data.frame(key = sapply(TPsubredFeb,get_val,i=1),
-                       value = sapply(TPsubredFeb,get_val,i=2), 
+                       value = sapply(TPsubredFeb,get_val,i=2),
                        stringsAsFactors=FALSE)
 sortFeb = countsFeb[with(countsFeb, order(-value)), ]
 sortFeb$rank = seq.int(nrow(sortFeb))
 Top25Feb = head(sortFeb,25)
+#Compare with the words in the previous month
 Top25Feb = merge(Top25Feb,sortJan,by = "key",all.x = T,all.y = F)
 Top25Feb = Top25Feb[with(Top25Feb, order(-value.x)), ]
 colnames(Top25Feb) = c("Subreddit","This month", "This month's rank",
@@ -132,11 +133,12 @@ save(sortFeb, file="Feb_Complete.RData")
 
 #Mar
 countsMar = data.frame(key = sapply(TPsubredMar,get_val,i=1),
-                       value = sapply(TPsubredMar,get_val,i=2), 
+                       value = sapply(TPsubredMar,get_val,i=2),
                        stringsAsFactors=FALSE)
 sortMar = countsMar[with(countsMar, order(-value)), ]
 sortMar$rank = seq.int(nrow(sortMar))
 Top25Mar = head(sortMar,25)
+#Compare with the words in the previous month
 Top25Mar = merge(Top25Mar,sortFeb,by = "key",all.x = T,all.y = F)
 Top25Mar = Top25Mar[with(Top25Mar, order(-value.x)), ]
 colnames(Top25Mar) = c("Subreddit","This month", "This month's rank",
@@ -150,11 +152,12 @@ save(sortMar, file="Mar_Complete.RData")
 
 #Apr
 countsApr = data.frame(key = sapply(TPsubredApr,get_val,i=1),
-                       value = sapply(TPsubredApr,get_val,i=2), 
+                       value = sapply(TPsubredApr,get_val,i=2),
                        stringsAsFactors=FALSE)
 sortApr = countsApr[with(countsApr, order(-value)), ]
 sortApr$rank = seq.int(nrow(sortApr))
 Top25Apr = head(sortApr,25)
+#Compare with the words in the previous month
 Top25Apr = merge(Top25Apr,sortMar,by = "key",all.x = T,all.y = F)
 Top25Apr = Top25Apr[with(Top25Apr, order(-value.x)), ]
 colnames(Top25Apr) = c("Subreddit","This month", "This month's rank",
@@ -168,11 +171,12 @@ save(Top25Apr, file="Top25Apr.RData")
 save(sortApr, file="Apr_Complete.RData")
 #May
 countsMay = data.frame(key = sapply(TPsubredMay,get_val,i=1),
-                       value = sapply(TPsubredMay,get_val,i=2), 
+                       value = sapply(TPsubredMay,get_val,i=2),
                        stringsAsFactors=FALSE)
 sortMay = countsMay[with(countsMay, order(-value)), ]
 sortMay$rank = seq.int(nrow(sortMay))
 Top25May = head(sortMay,25)
+#Compare with the words in the previous month
 Top25May = merge(Top25May,sortApr,by = "key",all.x = T,all.y = F)
 Top25May = Top25May[with(Top25May, order(-value.x)), ]
 colnames(Top25May) = c("Subreddit","This month", "This month's rank",
