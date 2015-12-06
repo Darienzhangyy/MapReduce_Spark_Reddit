@@ -1,25 +1,336 @@
 ---
-title: "hw5.Rmd"
+title: "Homework #5"
 author: "Eclectic Eagle Scouts"
 date: "12/3/2015"
 output: html_document
 ---
 
+#Task 1#
 
+###Raddit_Hadoop.R SHOULDN'T THIS BE REDDIT WITH AN E ###
 
-**Task 2**
+The first use of the Reddit data is to aggregate posts to the subreddit-month level and construct Billboard-esque Top 25 charts for each of the five months in the data -- January, February, March, May, June. SOMETHING SOMETHING SOMETHING ABOUT HOW THIS WAS DONE...
 
-Task2_sparkR.R
+###Monthly Billboards###
 
-To create plots that show the frequency of Reddit comments over the entire time period, we first create data frames that store total counts of comments by hour by aggregating five months' data ( stored as `CommentsByHour` as total comments and `CommentsByHour_G` as total gilded comments). We also create tables that details hourly comments over the days of the week for the entire period of five month (stored as `MondayComments, MondayComments_G (gilded), TuesdayComments, TuesdayComments_G (gilded)`, etc.) All the data frames are stored in `hourly.RData`.   
+####January Billboard####
 
-To create those tables we use Spark SQL to read in JSON files from January to May as SparkR DataFrames. This then allows us to to summarize counts of comments for each month with columns named `created_utc` and `count` that indicates counts of comments per `created_utc`. After counts are collected using `collect()`, we convert `created_utc` (Unix timestamp) into readable date and time using function `as.POSIXct()`, and create columns that denote hour (`as.POSIXlt(..$created_utc)$hour`) and weekday (`as.POSIXlt(..$created_utc)$wday`) according to each `created_utc`. To create data frame `CommentsByHour`, we use `aggregate(..list(..$hour))`, merge corresponding results from January to May and use `rowSums()` to created a `total` column that stores number of comments for the entire 5 months by each hour of day. To aggregate hourly counts of comment over days of week, with each month, we use `aggregate(..list(..$hour, ..$wday))` to aggregate counts of comments first by hour then by weekday. We then merge corresponding outcomes from January and May, create a column named `total` that sums up total number of comments across five month. We finally subset total counts by weekday using `subset()` and only extract columns that specifies a particular hour (`$hour`), a particular weekday (`$wday`), and comments in total (`$5 month total`)
+Although the majority of the highest volume subreddits are of general interest and evidence no obvious time component, a number of sports-related subreddits demonstrate seasonal fluctuations. Beginning with the January data, we can see these clocking in at #2 (nfl), #11 (nba), #15 (CFB [college football]), #16 (hockey), and #19 (soccer). The particular sports appearing are generally sensible for the month of January, with winter the traditional North American season for football, basketball, and hockey, and the Champions League entering the Knockout Phase. 
 
-```{r, echo=TRUE}
-source(hourly.RData)
+```{r,echo=F,results='asis',comment=F}
+load('RankData/Top25.RData'); load('RankData/Top25Jan.RData')
+library(xtable); library(magrittr)
+
+Top25Jan = Top25Jan %>%
+  extract(,1:2) %>%
+  set_colnames(c('Subreddit', 'Posts'))
+print(xtable(Top25Jan, digits=0), type='html')
 ```
 
-We then plot corresponding counts using ggplot.
+With January and football playoffs, both NFL and NCAA, a fading memory, but the SuperBowl results still fresh at hand, it makes sense that the NFL subreddit drops several places to #6 while the CFB subreddit disappears altogether from the rankings. Meanwhile, with the NBA and NHL seasons in full swing, those subreddits rise a handful of spots to #8 and #11, respectively. Soccer, somewhat inexplicably, holds steady at #19, despite the Champions League resuming play. The other big movers are non-sports subreddits, including DestinyTheGame (-4), DotA2 (+6), and pcmasterrace (-5), while the rest of the top 25 hold relatively steady.
 
+####February Billboard####
+```{r,echo=F,results='asis',comment=F}
+Top25Feb = Top25Feb %>%
+  extract(,c(1:3,5:6)) %>%
+  set_colnames(c('Subreddit', 'Posts', 'Jan.Posts', 'Jan.Rank', 'Change')) %>%
+  transform(Jan.Rank=replace(Jan.Rank, which(Jan.Rank>25), '--'), 
+            Change=replace(Change, which(Jan.Rank>25), '--'))
+print(xtable(Top25Feb, digits=0), type='html')
+```
 
-The result shows that...
+Moving to March, there is movement among the sports-themed subreddits. For whatever reason, the post-postseason NFL gains a spot to reenter the top five, yet the midseason NBA drops two spots to #10 and the midseason NHL remains frozen at #11. Soccer jumps five spots to #14, while CollegeBasketball enjoys a brief heyday thanks to March Madness, arriving at #21. Non-sport big movers again include DotA2 (-4) and DestinyTheGame (-7), as well as SquaredCircle (+6). The notorious fatpeoplehate subreddit also breaks into the top 25, debuting at #23.
+
+####March Billboard####
+```{r,echo=F,results='asis',comment=F}
+Top25Mar = Top25Mar %>%
+  extract(,c(1:3,5:6)) %>%
+  set_colnames(c('Subreddit', 'Posts', 'Feb.Posts', 'Feb.Rank', 'Change')) %>%
+  transform(Feb.Rank=replace(Feb.Rank, which(Feb.Rank>25), '--'), 
+            Change=replace(Change, which(Feb.Rank>25), '--'))
+print(xtable(Top25Mar, digits=0), type='html')
+```
+
+With April comes the end of the regular season for NBA and NHL fans, so it's no surprise to see both subreddits jump six spots to #4 and #5, respectively. Also unsurprising are the 11-spot plummet by the NFL subreddit and the disappearance of NCAA basketball fans. Soccer also maintains, dropping a single spot to #15. Further movement comes from news (+5), pcmasterrace (+5), todayilearned (-4), worldnews (-6), and SquaredCircle (-11). Fatpeoplehate drops one place to #24, while thebutton causes a brief sensation, entering the charts at #9.
+
+####April Billboard####
+```{r,echo=F,results='asis',comment=F}
+Top25Apr = Top25Apr %>%
+  extract(,c(1:3,5:6)) %>%
+  set_colnames(c('Subreddit', 'Posts', 'Mar.Posts', 'Mar.Rank', 'Change')) %>%
+  transform(Mar.Posts=replace(Mar.Posts, which(Mar.Posts=='--'), 0),
+            Mar.Rank=replace(Mar.Rank, which(Mar.Rank=='--'), 100),
+            Change=replace(Change, which(Mar.Rank=='--'), 100)) %>%
+  transform(Mar.Rank=as.integer(Mar.Rank), Change=as.integer(Change)) %>%
+  transform(Mar.Rank=replace(Mar.Rank, which(Mar.Rank>25), '--'), 
+            Change=replace(Change, which(Mar.Rank>25), '--'))
+print(xtable(Top25Apr, digits=0), type='html')
+```
+
+Entering May with the Playoffs still rolling, the NBA subreddit inches up to #3. Thanks to the NFL Draft, that subreddit also hit the top ten, jumping ten spots to #6. And while the soccer subreddit essentially holds steady, climbing from #15 to #13, the hockey subreddit drops precipitously from #5 to #18, despite the ongoing NHL Playoffs. Additional movement comes from DestinyTheGame (+11), DotA2 (+5), GlobalOffensive (+4), and gaming (-7). Among gimmicky subreddits, thebutton is gone as quickly as it appeared, while fatpeoplehate rises two spots to #22.
+
+####May Billboad####
+```{r,echo=F,results='asis',comment=F}
+Top25May = Top25May %>%
+  extract(,c(1:3,5:6)) %>%
+  set_colnames(c('Subreddit', 'Posts', 'Apr.Posts', 'Apr.Rank', 'Change')) %>%
+  transform(Apr.Rank=replace(Apr.Rank, which(Apr.Rank>25), '--'), 
+            Change=replace(Change, which(Apr.Rank>25), '--'))
+print(xtable(Top25May, digits=0), type='html')
+```
+
+#Task 2#
+
+###Task2_sparkR.R###
+
+To create plots showing the frequency of Reddit comments over the entire time period, we first create data frames that store total hourly post counts by aggregating the five months of data -- totals for all posts are stored in `CommentsByHour`, and totals for gilded posts in `CommentsByHour_G`. We also create tables that detail the hourly comment totals by days of the week for the entire period of five months. These are stored with names of the form `MondayComments`, `MondayComments_G` (gilded), `TuesdayComments`, `TuesdayComments_G` (gilded), etc. All of the data frames are stored in `hourly.RData`, and loaded from within the `Rmd` file to produce plots.   
+
+To create those tables we use Spark SQL to read in JSON files from January to May as SparkR DataFrames. This then allows us to to summarize counts of comments for each month with columns named `created_utc` and `count` that indicate counts of comments per `created_utc`. After counts are collected using `collect()`, we convert `created_utc` into readable dates and times using the `as.POSIXct()` function, and create columns that denote hour (`as.POSIXlt(..$created_utc)$hour`) and weekday (`as.POSIXlt(..$created_utc)$wday`) according to each `created_utc`. To create the `CommentsByHour` data frame, we use `aggregate(..list(..$hour))`, merge the corresponding results from January to May and use `rowSums()` to created a `total` column that stores the number of comments for the entire five month span at the hourly level. To aggregate hourly counts of posts over the days of the week by month, we use `aggregate(..list(..$hour, ..$wday))` to aggregate the counts of comments, first by hour then by weekday. We then merge the corresponding outcomes from January through May, creating a column named `total` that sums up the total number of comments across the five-month span. We finally subset the total counts by weekday using `subset()`, and only extract the columns specifying a particular hour (`$hour`), a particular weekday (`$wday`), and the full total (`$5 month total`)
+
+###Plots###
+
+The first pair of plots displays the hourly volume of Reddit posts, in totum (left panel) and per month (right panel). The first thing to notice is a clear time trend, with great variation around the mean hourly post volume, denoted by the dashed white line. Redditors post at below average levels from midnight to 8:00AM Eastern Standard Time (EST) and posts peaking from 1:00-3:00PM. It is worth pointing out that although Reddit is a global community, all timestamps have been converted from their original Coordinated Universal Time (UTC) to EST for the purposes of these plots. Turning to the right panel, this very intuitive time trend appears to persist once the data have been broken down to the monthly level.
+
+```{r, echo=F, fig.width=10, fig.height=4, asis=T}
+load('hourly.RData')
+library(magrittr); library(ggplot2); require(gridExtra, quietly=T); library(plyr)
+hourly_labels = paste0(c(12, seq(12), seq(11)), c(rep('am', 12), rep('pm', 12)))
+third_labels = hourly_labels[seq(24)[seq(1,24,3)]]
+
+monthly_complete = tidyr::gather(CommentsByHour, 'Month', 'Count', -c(1,7)) %>%
+  transform(Hour=Hour-5)
+wrong_day = which(monthly_complete[,'Hour']<0)
+monthly_complete[wrong_day,'Hour'] = monthly_complete[wrong_day,'Hour'] + 24
+monthly_complete = monthly_complete[order(monthly_complete$Month, monthly_complete$Hour),] %>% 
+  set_rownames(seq(nrow(monthly_complete)))
+
+monthly_gilded = tidyr::gather(CommentsByHour_G, 'Month', 'Count', -c(1,7)) %>%
+  transform(Hour=Hour-5)
+wrong_day = which(monthly_gilded[,'Hour']<0)
+monthly_gilded[wrong_day,'Hour'] = monthly_gilded[wrong_day,'Hour'] + 24
+monthly_gilded = monthly_gilded[order(monthly_gilded$Month, monthly_gilded$Hour),] %>% 
+  set_rownames(seq(nrow(monthly_gilded)))
+
+monthly = monthly_gilded %>%
+  cbind(Gilt=as.factor('Gilded')) %>%
+  rbind(cbind(monthly_complete, Gilt=as.factor('All'))) %>%
+  transform(Count=log(Count))
+
+monthly_all = monthly_complete %>%
+  transform(Count=Count+monthly_gilded$Count)
+all_mean = tapply(monthly_all$Count, monthly_all$Hour, sum) %>% 
+  mean
+
+all_black = ggplot(monthly_all, aes(x=Hour, y=Count)) + 
+  geom_bar(stat='identity') +
+  geom_hline(yint=all_mean, color='white', size=1, linetype=2) +
+  labs(title='Hourly volume of Reddit posts',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+all_color = ggplot(monthly_all, aes(x=Hour, y=Count, fill=Month)) + 
+  geom_bar(stat='identity') +
+  labs(title='Hourly volume of Reddit posts by month',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(all_black, all_color, ncol=2)
+```
+
+Further exploring these data at the monthly level, the next pair of plots separates each month while maintaining a standardized y-axis. This permits visual inspection of monthly differences in overall volume, while maintaining the visibility of the hourly time trend. Further disaggregating the data, the top panel displays all Reddit posts, while the bottom panel displays only 'gilded' posts, those earning the admiration of fellow Redditors. The general hourly time trend appears to hold across the gilded subset and the full dataset, although there is a slight bump around 5:00AM among gilded posts which is not present among the full data. This could, however, be a function of the much smaller sample size among gilded posts. It also appears that February was a relatively quieter month for Redditors as a whole, while no discernible differences present themselves among the monthly data on gilded posts.
+
+```{r, echo=F, fig.width=10, fig.height=8, asis=T}
+monthly_facet_complete = ggplot(monthly_complete, aes(x=Hour, y=Count)) + 
+  geom_bar(stat='identity', aes(fill=Month), show_guide=F) +
+  facet_wrap(~Month, ncol=5) +
+  labs(title='Hourly volume of all Reddit posts by month',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+monthly_facet_gilded = ggplot(monthly_gilded, aes(x=Hour, y=Count)) + 
+  geom_bar(stat='identity', aes(fill=Month), show_guide=F) +
+  facet_wrap(~Month, ncol=5) +
+  labs(title='Hourly volume of gilded Reddit posts by month',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(monthly_facet_complete, monthly_facet_gilded, ncol=1)
+```
+
+One final look at the monthly data comes from the pair of line graphs below. All posts appear in the left panel, with the gilded subset on the right. Overlaying the lines for hourly volume better allow identification of month-on-month differences, such as the aforementioned February dip in overall posts. Also apparent is much higher volume of January afternoon posts which earned gold status. It is also possible that the left panel reveals the effects of daylight savings time, as January and February morning posts occur noticeably and consistently later than their counterparts in March-May, corresponding nicely with the early March "spring-forward".
+
+```{r, echo=F, fig.width=10, fig.height=4, asis=T}
+monthly_complete_lines = ggplot(monthly_complete, aes(x=Hour, y=Count, color=Month)) + 
+  geom_freqpoly(stat='identity', size=2, aes(group=Month)) +
+  labs(title='Hourly volume of all Reddit posts by month',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+monthly_gilded_lines = ggplot(monthly_gilded, aes(x=Hour, y=Count, color=Month)) + 
+  geom_freqpoly(stat='identity', size=2, aes(group=Month)) +
+  labs(title='Hourly volume of gilded Reddit posts by month',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(monthly_complete_lines, monthly_gilded_lines, ncol=2)
+```
+
+Turning now to the daily data, the next pair of plots provide evidence for a second, weekly time trend across all (top panel) and gilded (bottom panel) posts. In both, posting volume increases significantly from Sunday to Monday, less so from Monday to Thursday, declines by a small amount on Friday, and drops precipitously on Saturday. Noticeably, Friday night and Saturday afternoon-night appear to witness a reduced volume of posts. It is yet again clear that the number of gilded posts is orders of magnitude smaller than the full universe of posts, but beyond that, disaggregating posts by gold status appears to provide little insight into Redditors' posting behaviors.
+
+```{r, echo=F, fig.width=10, fig.height=8, asis=T}
+weekday_labels = '2015-12-06' %>% 
+  as.Date %>% 
+  seq.Date(by=1, length.out=7) %>%
+  as.character(format='%A')
+
+daily_gilded = weekday_labels %>%
+  paste0('Comments_G') %>%
+  llply(get) %>%
+  do.call(rbind, .) %>%
+  cbind(Gilt='Gilded', stringsAsFactors=F) %>%
+  set_colnames(c('Hour', 'Weekday', 'Count', 'Gilt')) %>%
+  transform(Hour=Hour-5, 
+            Weekday=as.integer(Weekday),
+            Gilt=as.factor(Gilt))
+wrong_day = which(daily_gilded[,'Hour']<0)
+daily_gilded[wrong_day,'Weekday'] = daily_gilded[wrong_day,'Weekday'] - 1
+daily_gilded[wrong_day,'Hour'] = daily_gilded[wrong_day,'Hour'] + 24
+wrong_day = which(daily_gilded[,'Weekday']<0)
+daily_gilded[wrong_day,'Weekday'] = daily_gilded[wrong_day,'Weekday'] + 7
+daily_gilded = daily_gilded[order(daily_gilded$Weekday, daily_gilded$Hour),] %>% 
+  set_rownames(seq(168)) %>%
+  transform(Weekday=as.factor(Weekday))
+levels(daily_gilded$Weekday) = weekday_labels
+
+daily_complete = weekday_labels %>%
+  paste0('Comments') %>%
+  llply(get) %>%
+  do.call(rbind, .) %>%
+  cbind(Gilt='All', stringsAsFactors=F) %>%
+  set_colnames(c('Hour', 'Weekday', 'Count', 'Gilt')) %>%
+  transform(Hour=Hour-5, 
+            Weekday=as.integer(Weekday),
+            Gilt=as.factor(Gilt))
+  wrong_day = which(daily_complete[,'Hour']<0)
+  daily_complete[wrong_day,'Weekday'] = daily_complete[wrong_day,'Weekday'] - 1
+  daily_complete[wrong_day,'Hour'] = daily_complete[wrong_day,'Hour'] + 24
+  wrong_day = which(daily_complete[,'Weekday']<0)
+  daily_complete[wrong_day,'Weekday'] = daily_complete[wrong_day,'Weekday'] + 7
+  daily_complete = daily_complete[order(daily_complete$Weekday, daily_complete$Hour),] %>% 
+    set_rownames(seq(168)) %>%
+    transform(Weekday=as.factor(Weekday))
+levels(daily_complete$Weekday) = weekday_labels
+
+daily_all = rbind(daily_gilded, daily_complete) %>%
+  transform(Count=log(Count))
+
+daily_facet_complete = ggplot(daily_complete, aes(x=Hour, y=Count)) + 
+  geom_bar(stat='identity', aes(fill=Weekday), show_guide=F) +
+  facet_wrap(~Weekday, ncol=7) +
+  labs(title='Hourly volume of all Reddit posts by day',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+daily_facet_gilded = ggplot(daily_gilded, aes(x=Hour, y=Count)) + 
+  geom_bar(stat='identity', aes(fill=Weekday), show_guide=F) +
+  facet_wrap(~Weekday, ncol=7) +
+  labs(title='Hourly volume of gilded Reddit posts by day',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(daily_facet_complete, daily_facet_gilded, ncol=1)
+```
+
+The following pair of line plots -- all posts on the left and gilded on the right -- reinforce the impressions from the previous plots. Saturday and Sunday display a markedly reduced volume of daytime posts, while Friday and Saturday night volumes are even lower. Among gilded posts, there does appear to be a 3:00PM spike distinguishing Saturday from Sunday, rendering it more comparable to a weekday afternoon. 
+
+```{r, echo=F, fig.width=10, fig.height=4, asis=T}
+daily_complete_lines = ggplot(daily_complete, aes(x=Hour, y=Count, color=Weekday)) +
+  geom_freqpoly(stat='identity', size=2, aes(group=Weekday)) +
+  labs(title='Hourly volume of all Reddit posts by day',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  scale_color_discrete(name='Day', breaks=weekday_labels, labels=weekday_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+daily_gilded_lines = ggplot(daily_gilded, aes(x=Hour, y=Count, color=Weekday)) +
+  geom_freqpoly(stat='identity', size=2, aes(group=Weekday)) +
+  labs(title='Hourly volume of gilded Reddit posts by day',
+       x='Hour of post (EST)', y='Volume of posts') +
+  scale_x_discrete(breaks=seq(0, 23, 1), labels=hourly_labels) +
+  scale_color_discrete(name='Day', breaks=weekday_labels, labels=weekday_labels) +
+  coord_cartesian(xlim=c(-1, 24)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(daily_complete_lines, daily_gilded_lines, ncol=2)
+```
+
+One final pair of stacked bar plots is designed to drive home the rarity of gilded posts. To even display the two data sets on the same set of axes, it is necessary to first use the natural logarithm to transform the hourly post figures. Accordingly, both panels feature logged post volumes, disaggregated to the monthly (left panel) and daily (right panel) levels. Within each panel, the left subpanel displays gilded posts, and the right subpanel displays all posts. At both the monthly and daily levels, the logged volume of all posts is still over twice that of those earning gold.  
+
+```{r, echo=F, fig.width=10, fig.height=5, asis=T}
+monthly_all_stacked = ggplot(monthly, aes(x=Hour, y=Count, fill=Month)) + 
+  geom_bar(stat='identity') +
+  facet_wrap(~Gilt) +
+  labs(title='Hourly (logged) volume of Reddit \nposts by month and gilded status',
+       x='Hour of post (EST)', y='Volume of posts (logged)') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24), ylim=c(0,105)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+daily_all_stacked = ggplot(daily_all, aes(x=Hour, y=Count, fill=Weekday)) + 
+  geom_bar(stat='identity') +
+  facet_wrap(~Gilt) +
+  labs(title='Hourly (logged) volume of Reddit \nposts by day and gilded status',
+       x='Hour of post (EST)', y='Volume of posts (logged)') +
+  scale_fill_discrete(name='Day') +
+  scale_x_discrete(breaks=seq(0, 23, 3), labels=third_labels) +
+  coord_cartesian(xlim=c(-1, 24), ylim=c(0,105)) +
+  theme(axis.text.x=element_text(angle=45, vjust=1.25, hjust=1.25, size=6))
+
+grid.arrange(monthly_all_stacked, daily_all_stacked, ncol=2)
+```
+
+#Task 3#
+
+###Task3_spardoop.R###
+
+SOMETHING SOMETHING SOMETHING ABOUT HOW THIS WAS DONE...
+
+###Plot###
+
+The only interesting trend in the plot below is that "deleted" is the only frequently occurring word to see a persistent drop in absolute usage, with all other terms experiencing a dip on Valentine's Day and rebounding by the following Saturday. This indicates two things: (1) Redditors are taking the day off from Reddit on Valentine's Day, as judged by the general decline in word usage; and (2) Redditors do not say more regrettable things when posting on Valentine's Day, as evidenced by the absence of a 2/14 spike in the use of "deleted".
+
+```{r, echo=F, fig.width=10, fig.height=4, asis=T}
+load('Feb_ThreeDays.RData')
+word_count = tidyr::gather(wordCount, 'Label', 'Count', c(2,4,6)) %>%
+  extract(,5)
+word_label = tidyr::gather(wordCount, 'Date', 'Word', c(1,3,5)) %>%
+  extract(,4:5)
+word_data = cbind(word_label, word_count) %>%
+  set_colnames(c('Date', 'Word', 'Count')) %>%
+  transform(Word=as.factor(Word))
+levels(word_data$Date) = c('2015-02-07', '2015-02-14', '2015-02-21')
+  
+ggplot(word_data, aes(x=Date, y=Count, color=Word)) + 
+  geom_line(aes(group=Word), size=1) +
+  geom_text(data=word_data[which(word_data[,'Date']=='2015-02-07'),], 
+            aes(label=Word), show_guide=F, hjust=1.1, vjust=0.25, size=4) +
+  labs(title="Top 25 most frequently appearing words, Valentine's Day and the weeks surrounding") +
+  guides(color=guide_legend(ncol=2))
+```
