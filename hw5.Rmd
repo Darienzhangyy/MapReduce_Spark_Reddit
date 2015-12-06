@@ -6,7 +6,7 @@ output: html_document
 ---
 #Introduction#
 
-Some Reddit user has scraped tons of data from Reddit and made them available for whoever interested in. The dataset contains all comments on Reddit and its relevant information.  Our goal is to study usersâ€™ behavior based the dataset. However, the dataset is much bigger than other datasets we have dealt with before, and we use some new methods, Hapood and Spark.
+A particularly industrious Reddit user has scraped mountains of data in the form of Reddit posts and metadata, making them available to the data-wrangling public. Our goal is to study the€™ behavior of users based on the dataset. However, because the dataset is much larger than the other datasets we have dealt with before, we must utilize new methods such as Hapoop and SparkR.
 
 
 #Task 1#
@@ -314,7 +314,7 @@ grid.arrange(monthly_all_stacked, daily_all_stacked, ncol=2)
 
 ###Task3_spardoop.R###
 
-In Task3, we want to explore if the frequentist words on Valentineâ€™s day are the same as another control days. Similar to Task1, MapReduce function is used to realize word counting. However, what's trickier, we need to use regular expressions and string functions to clean the data and git rid of stopwords. The other parts are almost the same as Task1. 
+In Task 3, we compare the most frequently occurring words on Valentine's Day to the Saturday immediately prior and immediately following, our control days. Similar to our approach to Task 1, the map-reduce paradigm is used to count the words in each Reddit post. One difference, however, is that we use regular expressions and string functions to clean the data and remove stopwords, frequently occurring yet uninformative words. 
   
 
 ###Plot###
