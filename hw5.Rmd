@@ -4,12 +4,16 @@ author: "Eclectic Eagle Scouts"
 date: "12/3/2015"
 output: html_document
 ---
+#Introduction#
+
+Some Reddit user has scraped tons of data from Reddit and made them available for whoever interested in. The dataset contains all comments on Reddit and its relevant information.  Our goal is to study users’ behavior based the dataset. However, the dataset is much bigger than other datasets we have dealt with before, and we use some new methods, Hapood and Spark, to process and analyze the data.   
+
 
 #Task 1#
 
 ###Raddit_Hadoop.R SHOULDN'T THIS BE REDDIT WITH AN E ###
 
-The first use of the Reddit data is to aggregate posts to the subreddit-month level and construct Billboard-esque Top 25 charts for each of the five months in the data -- January, February, March, May, June. SOMETHING SOMETHING SOMETHING ABOUT HOW THIS WAS DONE...
+The first use of the Reddit data is to aggregate posts to the subreddit-month level and construct Billboard-esque Top 25 charts for each of the five months in the data -- January, February, March, May, June. To rank what were the 25 most popular subreddits from January to May, we use MapReduce model on Hadoop to process the dataset.
 
 ###Monthly Billboards###
 
