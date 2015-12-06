@@ -22,7 +22,7 @@ rhoptions(runner = 'sh ./R.Pkg/library/Rhipe/bin/RhipeMapReduce.sh')
 
 ### Word Count
 
-
+# define a map function for Valentine's day
 wc_map_Valen = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
@@ -30,6 +30,7 @@ wc_map_Valen = expression({
     seq_along(map.keys), 
     function(r) 
     { 
+      #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423958400 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423872000){
       line = tolower(fromJSON(map.values[[r]])$body)
@@ -44,7 +45,7 @@ wc_map_Valen = expression({
     }
   )
 })
-
+# define a map function for February 7th 
 wc_map_FebSev = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
@@ -52,6 +53,7 @@ wc_map_FebSev = expression({
     seq_along(map.keys), 
     function(r) 
     { 
+      #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1423353600 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1423267200){
         line = tolower(fromJSON(map.values[[r]])$body)
@@ -67,6 +69,7 @@ wc_map_FebSev = expression({
   )
 })
 
+# define a map function for February 21th 
 wc_map_FebTwoone = expression({
   suppressMessages(library(jsonlite))
   #suppressMessages(library(tm))
@@ -74,6 +77,7 @@ wc_map_FebTwoone = expression({
     seq_along(map.keys), 
     function(r) 
     { 
+      #clean data and remove stopwords
       if (as.numeric(fromJSON(map.values[[r]])$created_utc) <= 1424563200 &
           as.numeric(fromJSON(map.values[[r]])$created_utc) >= 1424476800){
         line = tolower(fromJSON(map.values[[r]])$body)
@@ -89,7 +93,7 @@ wc_map_FebTwoone = expression({
   )
 })
 
-
+# define a reduce function 
 wc_reduce = expression(
   pre = {
     total = 0
@@ -102,18 +106,21 @@ wc_reduce = expression(
   }
 )
 
+# creat a object wc_Valen to count words on Valentine's day
 wc_Valen = rhwatch(
   map      = wc_map_Valen,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
+# creat a object wc_FebSev to count words on Valentine's day
 wc_FebSev = rhwatch(
   map      = wc_map_FebSev,
   reduce   = wc_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
+# creat a object wc_FebTwoone to count words on Valentine's day
 wc_FebTwoone = rhwatch(
   map      = wc_map_FebTwoone,
   reduce   = wc_reduce,
@@ -126,40 +133,52 @@ setwd("~/MapReduce")
 
 #Valentine
 stopword = stopwords("en")
+#call the MapReduce function for Valentine's day
 countsValen = data.frame(key = sapply(wc_Valen,get_val,i=1),
                        value = sapply(wc_Valen,get_val,i=2), 
                        stringsAsFactors=FALSE)
 sortValen = countsValen[with(countsValen, order(-value)), ]
+#sort words from counting result
 sortValen = sortValen[which(!(sortValen$key %in% stopword)),]
+#take out Top25 words
 Top25Valen = head(sortValen,25)
 colnames(Top25Valen) = c("Word","Frequency")
 rownames(Top25Valen) <- NULL
+#save ranking result
 save(Top25Valen, file="Top25Valen.RData")
 save(sortValen, file="Valentine_Complete.RData")
 
 #Feb 7th
 stopword = stopwords("en")
+#call the MapReduce function for February 7th
 countsFebSev = data.frame(key = sapply(wc_FebSev,get_val,i=1),
                          value = sapply(wc_FebSev,get_val,i=2), 
                          stringsAsFactors=FALSE)
+#sort words from counnting result
 sortFebSev = countsFebSev[with(countsFebSev, order(-value)), ]
 sortFebSev = sortFebSev[which(!(sortFebSev$key %in% stopword)),]
+#take out Top25 words
 Top25FebSev = head(sortFebSev,25)
 colnames(Top25FebSev) = c("Word","Frequency")
 rownames(Top25FebSev) <- NULL
+#save ranking result
 save(Top25FebSev, file="Top25FebSev.RData")
 save(sortFebSev, file="FebSev_Complete.RData")
 
 #Feb 21st
 stopword = stopwords("en")
+#call the MapReduce function for February 21th
 countsFebTwoone = data.frame(key = sapply(wc_FebTwoone,get_val,i=1),
                          value = sapply(wc_FebTwoone,get_val,i=2), 
                          stringsAsFactors=FALSE)
 sortFebTwoone = countsFebTwoone[with(countsFebTwoone, order(-value)), ]
+#sort words from counnting result
 sortFebTwoone = sortFebTwoone[which(!(sortFebTwoone$key %in% stopword)),]
+#take out Top25 words
 Top25FebTwoone = head(sortFebTwoone,25)
 colnames(Top25FebTwoone) = c("Word","Frequency")
 rownames(Top25FebTwoone) <- NULL
+#save ranking result
 save(Top25FebTwoone, file="Top25FebTwoone.RData")
 save(sortFebTwoone, file="FebTwoone_Complete.RData")
 
