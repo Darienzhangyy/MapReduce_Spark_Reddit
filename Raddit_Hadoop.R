@@ -21,6 +21,7 @@ rhoptions(runner = 'sh ./R.Pkg/library/Rhipe/bin/RhipeMapReduce.sh')
 
 ### top 25 subreddits 
 
+# define a map function to rank subreddit
 Red_map = expression({
   suppressMessages(library(jsonlite))
   
@@ -36,7 +37,7 @@ Red_map = expression({
 })
 
 
-
+# define a corresponding reduce function
 Red_reduce = expression(
   pre = {
     total = 0
@@ -56,30 +57,35 @@ Red_reduce = expression(
 #   input    = rhfmt("/data/short_1e3.json", type = "text")
 # )
 
+# creat a R object TPsubredJan to rank subreddit in January
 TPsubredJan = rhwatch(
   map      = Red_map,
   reduce   = Red_reduce,
   input    = rhfmt("/data/RC_2015-01.json", type = "text")
 )
 
+# creat a R object TPsubredJan to rank subreddit in February
 TPsubredFeb = rhwatch(
   map      = Red_map,
   reduce   = Red_reduce,
   input    = rhfmt("/data/RC_2015-02.json", type = "text")
 )
 
+# creat a R object TPsubredJan to rank subreddit in March
 TPsubredMar = rhwatch(
   map      = Red_map,
   reduce   = Red_reduce,
   input    = rhfmt("/data/RC_2015-03.json", type = "text")
 )
 
+# creat a R object TPsubredJan to rank subreddit in April
 TPsubredApr = rhwatch(
   map      = Red_map,
   reduce   = Red_reduce,
   input    = rhfmt("/data/RC_2015-04.json", type = "text")
 )
 
+# creat a R object TPsubredJan to rank subreddit in May
 TPsubredMay = rhwatch(
   map      = Red_map,
   reduce   = Red_reduce,
